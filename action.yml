@@ -1,0 +1,12 @@
+name: 'Pull request Labeler by Seoyeon'
+description: 'Pull request Labeler by Seoyeon'
+inputs:
+  repo-token:
+      description: "Github Repo Secret Token."
+      required: true
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
