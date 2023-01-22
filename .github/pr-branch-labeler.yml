@@ -1,0 +1,13 @@
+develop:
+  base: ["develop/*", "develop*", "develop"]
+release:
+  base: ["main"]
+feature:
+  head: ["feature/*", "feat/*"]
+fix:
+  head: ["bugfix/*", "fix/*"]
+hotfix:
+  head: "hotfix/*"
+enhancement:
+  base: ["feature/*"]
+  head: ["enhance/*", "enhancement/*"]

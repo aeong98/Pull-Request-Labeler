@@ -1,0 +1,16 @@
+name: PR Branch Labeler
+
+on: pull_request
+
+permissions: write-all
+
+jobs:
+  label_prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label PRs
+        uses: ./
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          config-pathname: .github/pr-branch-labeler.yml
+
