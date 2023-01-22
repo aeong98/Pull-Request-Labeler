@@ -7,8 +7,8 @@ type Option = {
 };
 
 export function parseConfig(contentBase64: string): LabelConfig[] {
-  const content = yaml.load(Buffer.from(contentBase64, 'base64').toString());
-  if (typeof content !== 'object' || !content) {
+  const content = decodeYamlBase64toObject(contentBase64);
+  if (!content || typeof content !== 'object') {
     return [];
   }
   return Object.entries(content).reduce(
@@ -29,6 +29,10 @@ export function parseConfig(contentBase64: string): LabelConfig[] {
     [],
   );
 }
+
+const decodeYamlBase64toObject = (base64: string) => {
+  return yaml.load(Buffer.from(base64, 'base64').toString());
+};
 
 const getPatternArray = (pattern: string | string[]) => {
   if (Array.isArray(pattern)) {
