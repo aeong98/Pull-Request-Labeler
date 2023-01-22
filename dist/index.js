@@ -2,7 +2,7 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 5287:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
 
@@ -15,13 +15,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getConfigFile = void 0;
-const path_1 = __importDefault(__nccwpck_require__(1017));
-const CONFIG_PATH = '.github';
 function getConfigFile(github, fileName, context) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -29,7 +24,7 @@ function getConfigFile(github, fileName, context) {
             const configFile = {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                path: path_1.default.posix.join(CONFIG_PATH, fileName),
+                path: fileName,
                 ref: (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.sha,
             };
             const response = yield github.rest.repos.getContent(configFile);
@@ -98,8 +93,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseConfig = void 0;
 const js_yaml_1 = __importDefault(__nccwpck_require__(1917));
 function parseConfig(contentBase64) {
-    const content = js_yaml_1.default.load(Buffer.from(contentBase64, 'base64').toString());
-    if (typeof content !== 'object' || !content) {
+    const content = decodeYamlBase64toObject(contentBase64);
+    if (!content || typeof content !== 'object') {
         return [];
     }
     return Object.entries(content).reduce((entries, [label, option]) => {
@@ -117,6 +112,9 @@ function parseConfig(contentBase64) {
     }, []);
 }
 exports.parseConfig = parseConfig;
+const decodeYamlBase64toObject = (base64) => {
+    return js_yaml_1.default.load(Buffer.from(base64, 'base64').toString());
+};
 const getPatternArray = (pattern) => {
     if (Array.isArray(pattern)) {
         return pattern;
@@ -233,27 +231,50 @@ const getConfigFile_1 = __nccwpck_require__(5287);
 const getMatchedLabels_1 = __nccwpck_require__(9063);
 const parseConfig_1 = __nccwpck_require__(2945);
 exports.context = github.context;
-const CONFIG_FILENAME = 'pr-branch-labeler.yml';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const repoToken = core.getInput('repo-token', { required: true });
-        if (exports.context && exports.context.payload.pull_request) {
-            const octokit = github.getOctokit(repoToken);
-            const config = yield (0, getConfigFile_1.getConfigFile)(octokit, CONFIG_FILENAME, exports.context);
-            if (!config) {
-                throw new Error('get config file failed');
-            }
-            const headRef = exports.context.payload.pull_request.head.ref;
-            const baseRef = exports.context.payload.pull_request.base.ref;
-            const parsedConfig = (0, parseConfig_1.parseConfig)(config);
-            const labelsToAdd = (0, getMatchedLabels_1.getMatchedLabels)(parsedConfig, headRef, baseRef);
-            if (labelsToAdd.length > 0) {
-                yield octokit.rest.issues.addLabels(Object.assign({ issue_number: exports.context.payload.pull_request.number, labels: [...labelsToAdd] }, exports.context.repo));
-            }
+        const { repoToken, configFilePathname } = getInputs();
+        const octokit = getOctoKit(repoToken);
+        const config = yield getConfig(octokit, configFilePathname);
+        const labelsToAdd = getLabelsToAdd(config);
+        if (labelsToAdd.length > 0) {
+            yield addLabelsToPR(octokit, labelsToAdd);
         }
     });
 }
 exports.run = run;
+const getInputs = () => {
+    const repoToken = core.getInput('repo-token', { required: true });
+    const configFilePathName = core.getInput('config-pathname', {
+        required: true,
+    });
+    return {
+        repoToken,
+        configFilePathname: configFilePathName,
+    };
+};
+const getOctoKit = (token) => {
+    return github.getOctokit(token);
+};
+const getConfig = (octokit, configFilePathname) => __awaiter(void 0, void 0, void 0, function* () {
+    const config = yield (0, getConfigFile_1.getConfigFile)(octokit, configFilePathname, exports.context);
+    if (!config) {
+        throw new Error('get config file failed');
+    }
+    return (0, parseConfig_1.parseConfig)(config);
+});
+const getLabelsToAdd = (config) => {
+    var _a, _b;
+    const headRef = (_a = exports.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.ref;
+    const baseRef = (_b = exports.context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.base.ref;
+    return (0, getMatchedLabels_1.getMatchedLabels)(config, headRef, baseRef);
+};
+const addLabelsToPR = (octokit, labels) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!exports.context.payload.pull_request) {
+        return;
+    }
+    yield octokit.rest.issues.addLabels(Object.assign({ issue_number: exports.context.payload.pull_request.number, labels: labels }, exports.context.repo));
+});
 
 
 /***/ }),
