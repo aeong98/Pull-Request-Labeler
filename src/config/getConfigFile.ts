@@ -1,8 +1,5 @@
 import { Context } from '@actions/github/lib/context';
 import { GitHub } from '@actions/github/lib/utils';
-import path from 'path';
-
-const CONFIG_PATH = '.github';
 
 type ConfigFile = {
   owner: string;
@@ -20,7 +17,7 @@ export async function getConfigFile(
     const configFile: ConfigFile = {
       owner: context.repo.owner,
       repo: context.repo.repo,
-      path: path.posix.join(CONFIG_PATH, fileName),
+      path: fileName,
       ref: context.payload.pull_request?.head.sha,
     };
     const response = await github.rest.repos.getContent(configFile);
