@@ -3,33 +3,66 @@ import * as github from '@actions/github';
 import { getConfigFile } from './config/getConfigFile';
 import { getMatchedLabels } from './config/getMatchedLabels';
 import { parseConfig } from './config/parseConfig';
+import { GitHub } from '@actions/github/lib/utils';
+import { LabelConfig } from './types';
 
 export const context = github.context;
 
-const CONFIG_FILENAME = 'pr-branch-labeler.yml';
 export async function run() {
-  if (!context || !context.payload.pull_request) {
-    return;
+  const { repoToken, configFilePathname } = getInputs();
+  const octokit = getOctoKit(repoToken);
+
+  const config = await getConfig(octokit, configFilePathname);
+  const labelsToAdd = getLabelsToAdd(config);
+
+  if (labelsToAdd.length > 0) {
+    await addLabelsToPR(octokit, labelsToAdd);
   }
+}
 
+const getInputs = () => {
   const repoToken: string = core.getInput('repo-token', { required: true });
-  const octokit = github.getOctokit(repoToken);
+  const configFilePathName = core.getInput('config-pathname', {
+    required: true,
+  });
+  return {
+    repoToken,
+    configFilePathname: configFilePathName,
+  };
+};
 
-  const config = await getConfigFile(octokit, CONFIG_FILENAME, context);
+const getOctoKit = (token: string) => {
+  return github.getOctokit(token);
+};
+
+const getConfig = async (
+  octokit: InstanceType<typeof GitHub>,
+  configFilePathname: string,
+) => {
+  const config = await getConfigFile(octokit, configFilePathname, context);
+
   if (!config) {
     throw new Error('get config file failed');
   }
-  const parsedConfig = parseConfig(config);
+  return parseConfig(config);
+};
 
-  const headRef = context.payload.pull_request.head.ref;
-  const baseRef = context.payload.pull_request.base.ref;
-  const labelsToAdd = getMatchedLabels(parsedConfig, headRef, baseRef);
+const getLabelsToAdd = (config: LabelConfig[]) => {
+  const headRef = context.payload.pull_request?.head.ref;
+  const baseRef = context.payload.pull_request?.base.ref;
+  return getMatchedLabels(config, headRef, baseRef);
+};
 
-  if (labelsToAdd.length > 0) {
-    await octokit.rest.issues.addLabels({
-      issue_number: context.payload.pull_request.number,
-      labels: labelsToAdd,
-      ...context.repo,
-    });
+const addLabelsToPR = async (
+  octokit: InstanceType<typeof GitHub>,
+  labels: string[],
+) => {
+  if (!context.payload.pull_request) {
+    return;
   }
-}
+  await octokit.rest.issues.addLabels({
+    issue_number: context.payload.pull_request.number,
+    labels: labels,
+    ...context.repo,
+  });
+};

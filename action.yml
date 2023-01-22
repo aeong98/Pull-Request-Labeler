@@ -4,6 +4,9 @@ inputs:
   repo-token:
       description: "Github Repo Secret Token."
       required: true
+  config-pathname:
+      description: "Config file path (ex. .github/pr-labeler.yml"
+      required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -35,7 +35,7 @@ export async function getConfigFile(
     if ('content' in response.data) {
       return response.data.content;
     }
-  } catch (error: any) {
+  } catch (error: InstanceType<Error>) {
     if (error.status === 404) {
       throw new Error('404 error happened');
     }
