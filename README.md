@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Label PRs
-        env:
-          ACTIONS_STEP_DEBUG: true
         uses: aeong98/Pull-Request-Labeler@pre-release
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          config-pathname: .github/pr-branch-labeler.yml
+
 ```
 
 ## config file example
