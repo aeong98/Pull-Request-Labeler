@@ -24,6 +24,7 @@ export async function getConfigFile(
       ref: context.payload.pull_request?.head.sha,
     };
     const response = await github.rest.repos.getContent(configFile);
+
     if (Array.isArray(response.data)) {
       throw new Error(`${fileName} is not file`);
     }

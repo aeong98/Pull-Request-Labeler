@@ -18,12 +18,10 @@ coverage
 Thumbs.db
 
 # OS metadata
-# 테스트
 .DS_Store
 Thumbs.db
 
 # Ignore built ts files
 __tests__/runner/*
-#lib/**/*
 
 .idea

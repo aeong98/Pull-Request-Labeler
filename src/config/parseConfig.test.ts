@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import { parseConfig } from './parseConfig';
-import { LabelConfig } from '../types';
 
 describe('praseConfig test', () => {
   test('yaml파일의 base64 string을 LabelConfig[]형태로 변환해서 반환한다.', () => {
@@ -11,7 +10,7 @@ describe('praseConfig test', () => {
     const result = parseConfig(doc as string);
 
     //then
-    const resultLabelConfig: LabelConfig[] = [
+    expect(result).toEqual([
       {
         label: 'develop',
         base: ['develop', 'develop/*'],
@@ -22,7 +21,6 @@ describe('praseConfig test', () => {
         base: ['main'],
         head: ['develop'],
       },
-    ];
-    expect(result).toEqual(resultLabelConfig);
+    ]);
   });
 });

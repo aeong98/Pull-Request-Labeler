@@ -16,14 +16,13 @@ export async function run() {
   const octokit = github.getOctokit(repoToken);
 
   const config = await getConfigFile(octokit, CONFIG_FILENAME, context);
-
   if (!config) {
     throw new Error('get config file failed');
   }
+  const parsedConfig = parseConfig(config);
 
   const headRef = context.payload.pull_request.head.ref;
   const baseRef = context.payload.pull_request.base.ref;
-  const parsedConfig = parseConfig(config);
   const labelsToAdd = getMatchedLabels(parsedConfig, headRef, baseRef);
 
   if (labelsToAdd.length > 0) {
