@@ -8,6 +8,7 @@ fix:
   head: ["bugfix/*", "fix/*"]
 hotfix:
   head: "hotfix/*"
+# 테스트
 enhancement:
   base: ["feature/*"]
   head: ["enhance/*", "enhancement/*"]
