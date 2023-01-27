@@ -1,21 +1,21 @@
 # Pull-Request Labeler
 
 ## github action file example (for use)
-- you only need `github secret token`
+### input
+- repo-token: your github secret token
+- config-pathname : pathname of your config file
 
 ```yml
 name: PR Branch Labeler
 
 on: pull_request
 
-permissions: write-all
-
 jobs:
   label_prs:
     runs-on: ubuntu-latest
     steps:
       - name: Label PRs
-        uses: aeong98/Pull-Request-Labeler@pre-release
+        uses: aeong98/Pull-Request-Labeler@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           config-pathname: .github/pr-branch-labeler.yml
@@ -23,7 +23,6 @@ jobs:
 ```
 
 ## config file example
-- config file must be placed at `.github/pr-branch-labeler.yml`
 
 ```yml
 develop:
